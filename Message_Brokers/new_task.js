@@ -1,30 +1,26 @@
+#!/usr/bin/env node
+
 const amqp = require('amqplib');
 
 async function main() {
     const connection = await amqp.connect('amqp://localhost');
     const channel = await connection.createChannel();
 
-    const queue = 'hello';
-    const msg = 'Hello World!';
+    const queue = 'task_queue';
+    const msg = process.argv.slice(2).join(' ') || "Hello World!";
 
     await channel.assertQueue(queue, {
         durable: true,
         arguments: { 'x-queue-type': 'quorum' }
     });
-
-    channel.sendToQueue(queue, Buffer.from(msg));
-
-    let test = 'test '
-
-    for (let i=0; i<1000; i++) {
-      test += `test ${i}`;
-      channel.sendToQueue(queue, Buffer.from(test));
-      console.log(" [x] Sent %s", test);
-    }
+    channel.sendToQueue(queue, Buffer.from(msg), {
+        persistent: true
+    });
+    console.log(" [x] Sent '%s'", msg);
 
     setTimeout(function() {
-      connection.close();
-      process.exit(0);
+        connection.close();
+        process.exit(0);
     }, 500);
 }
 
