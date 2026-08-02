@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 const amqp = require('amqplib');
 
 async function main() {
@@ -5,21 +7,19 @@ async function main() {
     const channel = await connection.createChannel();
 
     const queue = 'hello';
-    const msg = 'Hello World!';
 
     await channel.assertQueue(queue, {
         durable: true,
         arguments: { 'x-queue-type': 'quorum' }
     });
-    
-    channel.sendToQueue(queue, Buffer.from(msg));
 
-    console.log(" [x] Sent %s", msg);
+    console.log(" [*] Waiting for messages in %s. To exit press CTRL+C", queue);
 
-    setTimeout(function() {
-        connection.close();
-        process.exit(0);
-    }, 500);
+    channel.consume(queue, function(msg) {
+        console.log(" [x] Received %s", msg.content.toString());
+    }, {
+        noAck: true
+    });
 }
 
 main();
