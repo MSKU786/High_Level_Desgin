@@ -15,6 +15,7 @@ async function main() {
     channel.prefetch(1);
     console.log(" [*] Waiting for messages in %s. To exit press CTRL+C", queue);
     channel.consume(queue, function(msg) {
+        //console.log(msg);
         const secs = msg.content.toString().split('.').length - 1;
         console.log(secs);
         console.log(" [x] Received %s", msg.content.toString());
