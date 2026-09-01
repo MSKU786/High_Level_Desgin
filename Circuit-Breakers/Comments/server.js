@@ -87,6 +87,12 @@ const healthCheck = async() => {
   return healthy;
 }
 
+
+app.get('/health', async (req, res) => {
+  const healthy = await healthCheck();
+  res.json({healthy});
+})
+
 db.init().then(() => {
   app.listen(PORT, () => {
     console.log(`server listending on ${PORT}`);
