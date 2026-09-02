@@ -1,11 +1,13 @@
 const express = require('express');
-const app = express();
+
 const db = require('../Shared/db.js')
 const PORT = 3001;
+const {callService} = require('../Shared/downstream.js')
 
+const app = express();
 app.use(express.json());
 
-app.post("/post/create", (req,res) => {
+app.post("/posts", (req,res) => {
   const {title, body, userId} = req.body;\
 
   if (!title || !userId) {
@@ -40,12 +42,21 @@ app.get('/post/:postId', async (req,res) => {
   ? await db.all('SELECT * FROM posts WHERE id = ?', [postId])
   : []
 
-  const user = await axios.get(`http://localhost:3002/users/${userId}`);
-  if (!user) {
-    return res.status(404).json({error: 'User not found'});
-  }
 
-  return res.status(200).json({post, user});
+  try {
+    const user = await callService('users', `http://localhost:3002/users/${userId}`);
+    if (!user) {
+      return res.status(404).json({error: 'User not found'});
+    }
+
+    return res.json({...post, user})
+  } catch(e) {
+    if (e.circuitOpen) {
+      return res.status(503).json({error: 'user service unavilable'})
+    }
+
+    return res.status(502).json({error: 'failed to fetch user'})
+  }
 })
 
 
