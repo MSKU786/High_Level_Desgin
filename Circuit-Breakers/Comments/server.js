@@ -5,8 +5,8 @@ const PORT = 3000;
 
 app.use(express.json());
 
-app.post("/comments/create", (req,res) => {
-  const {postId, comment, userId} = req.body;\
+app.post("/comments/create", async (req,res) => {
+  const {postId, comment, userId} = req.body;
 
   if (!postId || !comment || !userId) {
     return res.status(400).json({error: 'Missing required fields'});

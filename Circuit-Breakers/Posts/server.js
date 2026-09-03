@@ -7,8 +7,8 @@ const {callService} = require('../Shared/downstream.js')
 const app = express();
 app.use(express.json());
 
-app.post("/posts", (req,res) => {
-  const {title, body, userId} = req.body;\
+app.post("/posts", async (req,res) => {
+  const {title, body, userId} = req.body;
 
   if (!title || !userId) {
     return res.status(400).json({error: 'Missing required fields'});
